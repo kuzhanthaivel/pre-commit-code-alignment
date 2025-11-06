@@ -1,70 +1,101 @@
-# Getting Started with Create React App
+# Pre-commit Code Formatting with Husky and lint-staged
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This guide will help you set up automatic code formatting using Husky and lint-staged to ensure consistent code style in your project before every commit.
 
-## Available Scripts
+## Prerequisites
 
-In the project directory, you can run:
+- Node.js project with `package.json`
+- Git initialized in your project
 
-### `npm start`
+## Setup Instructions
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. Install Required Packages
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Install the necessary development dependencies:
 
-### `npm test`
+```bash
+# Using npm
+npm install --save-dev husky lint-staged prettier
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+# Or using Yarn
+yarn add --dev husky lint-staged prettier
+```
 
-### `npm run build`
+### 2. Initialize Husky
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Set up Husky and create the required configuration files:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+# Using npm
+npx husky init && npm install
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Or using Yarn
+yarn husky init && yarn install
+```
 
-### `npm run eject`
+This will:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- Create a `.husky` directory
+- Add a sample `pre-commit` hook
+- Add a `prepare` script to your `package.json`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 3. Configure lint-staged
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Add the following configuration to your `package.json`:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```json
+{
+  // ... other configurations
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,json,css,md}": ["prettier --write"]
+  }
+}
+```
 
-## Learn More
+This configuration will run Prettier on all staged files with the specified extensions.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 4. Configure Husky Pre-commit Hook
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Update the `.husky/pre-commit` file with the following content:
 
-### Code Splitting
+```bash
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+npx lint-staged
+# or use: yarn lint-staged
+```
 
-### Analyzing the Bundle Size
+Make the file executable (if needed):
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+```bash
+chmod +x .husky/pre-commit
+```
 
-### Making a Progressive Web App
+### 5. Test Your Setup
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+1. Make a change to a file that violates your formatting rules
+2. Stage the changes:
+   ```bash
+   git add .
+   ```
+3. Create a commit:
+   ```bash
+   git commit -m "Test husky commit"
+   ```
 
-### Advanced Configuration
+The pre-commit hook will automatically format your staged files before the commit is created.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## Bypassing Hooks (When Needed)
 
-### Deployment
+To bypass the pre-commit hook (use sparingly):
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+```bash
+git commit -m "Your commit message" --no-verify
+```
 
-### `npm run build` fails to minify
+## Troubleshooting
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- If you encounter permission issues, ensure the pre-commit hook is executable
+- Verify that all dependencies are installed correctly
+- Check your editor's settings to ensure it's not conflicting with Prettier
